@@ -1,0 +1,26 @@
+black->light
+sky->light
+light->bulb
+
+tap->dance
+tap->out
+wire->tap
+
+gut->shot
+gut->bacteria
+gut->feeling
+
+witch->craft
+craft->fair
+hover->craft
+
+light->beer
+beer->tap
+beer->gut
+craft->beer
+
+given: [leaves]
+
+random seed: 42
+
+name: Level 2
