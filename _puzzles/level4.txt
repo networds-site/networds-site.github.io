@@ -1,0 +1,45 @@
+catholic->church
+church->choir
+church->goer
+rock->bottom
+bottom->feeder
+bottom->line
+dive->bar
+bar->exam
+bar->code
+church->bell
+bell->bottom
+bar->bell
+blue->bell
+lemon->drop
+lemon->curd
+lemon->rind
+over->fed
+spoon->fed
+fed->up
+land->slide
+home->land
+marsh->land
+lemon->grass
+grass->fed
+grass->land
+blue->grass
+battle->cry
+far->cry
+cry->wolf
+troll->doll
+porcelain->doll
+doll->house
+hall->monitor
+monitor->lizard
+desktop->monitor
+cry->baby
+baby->doll
+baby->monitor
+baby->blue
+
+given: catholic, choir, goer, rock, feeder, line, dive, exam, code, battle, far, wolf, troll, porcelain, house, hall, lizard, desktop, marsh, home, slide, up, spoon, over, rind, curd, drop
+
+random seed: 17
+
+name: Level 4

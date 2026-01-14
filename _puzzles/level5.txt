@@ -1,0 +1,40 @@
+second->base
+second->coat
+down->coat
+winter->coat
+rain->coat
+winter->break
+bathroom->break
+break->fast
+break<->water
+rain->water
+winter->storm
+rain->bow
+acid->rain
+acid->green
+green->apple
+salad<->green
+green->back
+fruit->salad
+tropical->fruit
+tropical->island
+tropical->storm
+storm->drain
+second->hand
+leap->second
+water->shed
+heavy->water
+storm->cell
+rain->storm
+taco->salad
+salad->fork
+rain->forest
+
+
+given: [all] - break, water, rain, winter, coat, storm, tropical, salad, green, second
+
+random seed: 7
+
+name: Level 5
+
+gimmick: invisible_connections

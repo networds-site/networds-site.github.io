@@ -1,0 +1,11 @@
+one<-chosen
+one->dimensional
+one<-square
+one->track
+one->liner
+
+given: [leaves]
+
+random seed: 17
+
+name: Level 1

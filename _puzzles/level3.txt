@@ -1,0 +1,27 @@
+house<-town
+house<-full
+house->fly
+house->keeping
+house<->boat
+boat<-paper
+boat<-tug
+boat<-fishing
+fly->fishing
+fishing->trip
+horse->fly
+fly->paper
+horse<->race
+boat->race
+paper->clip
+paper->plane
+rice->paper
+horse<-dark
+horse->power
+race->track
+race<-rat
+
+given: [leaves]
+
+random seed: 17
+
+name: Level 3

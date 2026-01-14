@@ -1,0 +1,19 @@
+# Site settings
+title: Networds
+description: "a game"
+
+# Build settings
+markdown: kramdown
+permalink: /:title/
+
+# Collections
+collections:
+  puzzles:
+    output: true
+    permalink: /:name/
+
+# Exclude from processing
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor

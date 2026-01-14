@@ -1,0 +1,22 @@
+coffee->mug
+mug->shot
+mug->handle
+mug~gum
+gum->pack
+wolf->pack
+pack<->rat
+wolf~flow
+flow->chart
+flow->state
+cash->flow
+rat~tar
+tar->heel
+tar->pit
+black->tar
+state~taste
+
+given: [leaves] + state
+
+random seed: 17
+
+name: Level 6
