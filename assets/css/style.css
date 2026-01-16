@@ -12,19 +12,6 @@
   --meta-color: #666;
 }
 
-/* Dark mode */
-[data-theme="dark"] {
-  --text-color: #ddd;
-  --heading-color: #eee;
-  --bg-color: #1a1a1a;
-  --link-color: #69b7ff;
-  --link-visited: #b19cd9;
-  --link-hover: #89cff0;
-  --code-bg: #2a2a2a;
-  --border-color: #444;
-  --meta-color: #999;
-}
-
 /* Base styles */
 body {
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, sans-serif;
@@ -98,25 +85,6 @@ pre code {
   font-size: 1em;
 }
 
-/* Theme toggle button */
-.theme-toggle {
-  position: fixed;
-  top: 1em;
-  right: 1em;
-  background: none;
-  border: none;
-  font-size: 1.5em;
-  color: var(--meta-color);
-  cursor: pointer;
-  z-index: 100;
-  transition: color 0.2s ease;
-  padding: 0.5em;
-}
-
-.theme-toggle:hover {
-  color: var(--link-hover);
-}
-
 /* Container for puzzle pages */
 .container {
   max-width: 1200px;
@@ -159,10 +127,4 @@ footer {
   h1 { font-size: 1.5em; }
   h2 { font-size: 1.25em; }
   h3 { font-size: 1.1em; }
-
-  .theme-toggle {
-    top: 0.5em;
-    right: 0.5em;
-    font-size: 1.2em;
-  }
 }

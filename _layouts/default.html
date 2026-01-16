@@ -13,33 +13,6 @@
   {% endif %}
 </head>
 <body>
-  <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode">
-    <span class="theme-icon">☀️</span>
-  </button>
-
   {{ content }}
-
-  <script>
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-theme');
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-      document.documentElement.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-
-      // Update button icon
-      const icon = document.querySelector('.theme-icon');
-      icon.textContent = newTheme === 'dark' ? '☀️' : '🌙';
-    }
-
-    // Initialize theme on page load
-    document.addEventListener('DOMContentLoaded', function() {
-      const savedTheme = localStorage.getItem('theme') || 'light';
-      document.documentElement.setAttribute('data-theme', savedTheme);
-
-      const icon = document.querySelector('.theme-icon');
-      icon.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
-    });
-  </script>
 </body>
 </html>
