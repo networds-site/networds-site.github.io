@@ -1,10 +1,20 @@
-one<-chosen
-one->dimensional
-one<-square
-one->track
-one->liner
+end<-dead
+end~and
+end#den
 
-given: [leaves]
+lion->den
+den#pen
+
+and->one
+any->one
+and#any
+
+dead#head
+dead->stop
+stop~spot
+
+
+given: [leaves] + any, one
 
 random seed: 17
 

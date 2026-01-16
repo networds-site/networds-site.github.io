@@ -105,6 +105,12 @@ layout: default
         word1 = parts[0].trim();
         word2 = parts[1].trim();
         direction = 'anagram';
+      } else if (trimmedLine.includes('#')) {
+        // Triangle wave (bidirectional, special drawing)
+        const parts = trimmedLine.split('#');
+        word1 = parts[0].trim();
+        word2 = parts[1].trim();
+        direction = 'triangle';
       } else if (trimmedLine.includes('<->')) {
         // Bidirectional
         const parts = trimmedLine.split('<->');
@@ -1162,9 +1168,11 @@ layout: default
             const baseX = from.x + t * dx;
             const baseY = from.y + t * dy;
 
-            // Sine wave offset perpendicular to line
+            // Sine wave offset perpendicular to line with |sin(x)^alpha| * sign(sin(x))
             const phase = (t * distance / wavelength) * 2 * Math.PI;
-            const offset = amplitude * Math.sin(phase);
+            const sinValue = Math.sin(phase);
+            const alpha = 0.5;
+            const offset = amplitude * Math.pow(Math.abs(sinValue), alpha) * Math.sign(sinValue);
 
             const x = baseX + offset * perpX;
             const y = baseY + offset * perpY;
@@ -1194,6 +1202,85 @@ layout: default
           }
 
           // Draw the trimmed sine wave
+          ctx.beginPath();
+          for (let i = startIdx; i <= endIdx; i++) {
+            if (i === startIdx) {
+              ctx.moveTo(points[i].x, points[i].y);
+            } else {
+              ctx.lineTo(points[i].x, points[i].y);
+            }
+          }
+          ctx.stroke();
+
+          // Reset stroke style for next edges
+          ctx.strokeStyle = '#000';
+        } else if (edge.direction === 'triangle') {
+          // Draw blue triangle wave for triangle edges
+          ctx.strokeStyle = '#0000ff';
+
+          const dx = to.x - from.x;
+          const dy = to.y - from.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+
+          // Triangle wave parameters (double frequency of sine wave)
+          const wavelength = LENGTH_SCALE / 8;
+          const amplitude = wavelength / 4;
+
+          // Direction vectors
+          const dirX = dx / distance;
+          const dirY = dy / distance;
+          const perpX = -dirY;  // Perpendicular (for wave oscillation)
+          const perpY = dirX;
+
+          // Generate all triangle wave points
+          const numSegments = Math.max(50, Math.floor(distance / 2));
+          const points = [];
+          for (let i = 0; i <= numSegments; i++) {
+            const t = i / numSegments;
+            const baseX = from.x + t * dx;
+            const baseY = from.y + t * dy;
+
+            // Triangle wave offset perpendicular to line
+            const phase = (t * distance / wavelength);
+            const phaseInCycle = phase - Math.floor(phase);
+            // Triangle wave: goes from 0 to 1 to 0 to -1 to 0
+            let offset;
+            if (phaseInCycle < 0.25) {
+              offset = amplitude * (phaseInCycle * 4);
+            } else if (phaseInCycle < 0.75) {
+              offset = amplitude * (2 - phaseInCycle * 4);
+            } else {
+              offset = amplitude * (-4 + phaseInCycle * 4);
+            }
+
+            const x = baseX + offset * perpX;
+            const y = baseY + offset * perpY;
+            points.push({ x, y });
+          }
+
+          // Find first point outside "from" box, then go one more back to connect
+          let startIdx = 0;
+          for (let i = 0; i < points.length; i++) {
+            const p = points[i];
+            if (Math.abs(p.x - from.x) > fromBox.width / 2 ||
+                Math.abs(p.y - from.y) > fromBox.height / 2) {
+              startIdx = Math.max(0, i - 1); // Go one point back
+              break;
+            }
+          }
+
+          // Find last point outside "to" box, then go one more forward to connect
+          let endIdx = points.length - 1;
+          for (let i = points.length - 1; i >= 0; i--) {
+            const p = points[i];
+            if (Math.abs(p.x - to.x) > toBox.width / 2 ||
+                Math.abs(p.y - to.y) > toBox.height / 2) {
+              endIdx = Math.min(points.length - 1, i + 1); // Go one point forward
+              break;
+            }
+          }
+
+          // Draw the trimmed triangle wave
           ctx.beginPath();
           for (let i = startIdx; i <= endIdx; i++) {
             if (i === startIdx) {
@@ -1244,8 +1331,8 @@ layout: default
       // Draw circles on top of everything based on edge direction
       ctx.fillStyle = '#000';
       edges.forEach(edge => {
-        // Skip circles for anagram edges
-        if (edge.direction === 'anagram') {
+        // Skip circles for anagram and triangle edges
+        if (edge.direction === 'anagram' || edge.direction === 'triangle') {
           return;
         }
 
