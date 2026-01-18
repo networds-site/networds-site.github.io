@@ -1,38 +1,66 @@
 # Claude Notes - Networds Site
 
-## Important Rules
+## Critical Rules
 - **NEVER push to GitHub unless explicitly told to do so**
-- User will initiate all git pushes
+- User always initiates git pushes
 
-## Architecture Notes
+## Project Overview
+Word puzzle game site hosted on GitHub Pages. Minimal Jekyll site with network-based word connection puzzles.
+
+## Architecture
 
 ### Site Structure
-- Minimal Jekyll site with Gill Sans font
-- Homepage lists all puzzles sorted by level
-- Each puzzle is a network word connection game
-- Puzzles render at root level (e.g., `/level1/`, not `/puzzles/level1/`)
+- Jekyll static site with Gill Sans font, light mode only
+- Homepage (`index.html`): Lists all puzzles sorted by level
+- Puzzles render at root level: `/level1/`, `/level2/`, etc. (NOT `/puzzles/level1/`)
+- Collections configured in `_config.yml` with `permalink: /:name/`
 
 ### Puzzle Format
-Each puzzle consists of two files:
-1. `.md` file with front matter (layout, type, title, level, data_file)
-2. `.txt` file with puzzle data (edges, given words, random seed, name)
+Each puzzle = 2 files in `_puzzles/`:
+1. **`.md` file**: Front matter with layout, type, title, level, data_file
+2. **`.txt` file**: Puzzle data with edges, given words, random seed, name
 
-### Collections
-- Puzzles are in `_puzzles/` directory
-- Jekyll collections configured in `_config.yml`
-- Permalink pattern: `/:name/`
+Example edge syntax:
+```
+word1->word2    # directed arrow
+word1<->word2   # bidirectional
+word1~word2     # anagram (red sine wave, formula: |sin(x)^0.5| * sign(sin(x)))
+word1#word2     # change one letter (blue triangle wave, 2x frequency of anagram)
+word1-word2     # undirected
+```
 
-### Current Puzzles
-- Level 1-7 (7 was originally "Untitled")
-- Level 11 (final) - placeholder, copy of Level 1
+Given words syntax:
+```
+given: [leaves]              # only leaf nodes
+given: [leaves] + word1, word2   # leaves plus specific words
+given: [all]                 # all words shown
+```
+
+### Edge Types & Visual Rendering
+- **Arrows** (`->`, `<-`, `<->`): Black lines with directional circles
+- **Anagram** (`~`): Red sine wave, modified formula `|sin(x)^0.5| * sign(sin(x))`
+- **Change-one-letter** (`#`): Blue triangle wave, 2x frequency of anagram wave
+- **Undirected** (`-`): Black line, no circles
 
 ### Game Engine
-- Complete self-contained game in `_layouts/network_puzzle.html` (1,326 lines)
-- Includes physics engine, rendering, audio, game logic
-- Victory music: `audio/chopin_nocturne.mp3`
-- Supports directional arrows, anagrams (~), and special gimmicks
+- Self-contained in `_layouts/network_puzzle.html`
+- Force-directed graph physics with 4 animation phases
+- Victory music: `audio/chopin_nocturne.mp3` (Chopin nocturne)
+- Progress saved in localStorage per puzzle
+- Supports special gimmicks (e.g., invisible_connections)
 
-### Styling
-- Light mode only (dark mode was added then removed)
-- Minimal aesthetic with Gill Sans font
-- CSS variables for colors in `assets/css/style.css`
+### Current Puzzles
+- Levels 1-7 (Level 2 added during session)
+- Level 11 (final) - complete puzzle with mixed edge types
+
+### Key Files
+- `_config.yml`: Jekyll config, collections, site metadata
+- `_layouts/default.html`: Base layout wrapper
+- `_layouts/network_puzzle.html`: Complete game engine
+- `assets/css/style.css`: Minimal styles with CSS variables
+- `index.html`: Homepage with puzzle list
+
+### GitHub Pages Deployment
+- Uses GitHub Actions workflow (`.github/workflows/jekyll.yml`)
+- Settings → Pages → Source: GitHub Actions
+- Auto-builds on push to main branch
