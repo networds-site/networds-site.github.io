@@ -60,10 +60,10 @@ layout: default
   headerViz.start();
 </script>
 
-<main style="text-align: center; margin-top: 40px;">
-  <div style="position: relative; display: inline-block;">
-    <button id="eraseAllProgressButton" style="position: absolute; top: 10px; right: 10px; padding: 8px 16px; font-family: 'Gill Sans', sans-serif; font-size: 14px; background-color: white; color: #e63946; border: 2px solid #e63946; border-radius: 4px; cursor: pointer;">erase all progress</button>
-    <canvas id="levelSelectViz" width="1200" height="800" style="display: block;"></canvas>
+<main style="text-align: center; margin-top: 0px;">
+  <div style="position: relative; display: inline-block; margin: 0 auto;">
+    <button id="eraseAllProgressButton" style="position: absolute; top: 10px; right: 10px; padding: 8px 16px; font-family: 'Gill Sans', sans-serif; font-size: 14px; background-color: white; color: #e63946; border: 2px solid #e63946; border-radius: 4px; cursor: pointer; z-index: 10;">erase all progress</button>
+    <canvas id="levelSelectViz" width="1200" height="320" style="display: block;"></canvas>
   </div>
 </main>
 
@@ -83,8 +83,10 @@ layout: default
   const maxCompletedLevel = completedLevels.length > 0 ? Math.max(...completedLevels) : 0;
   const highestUnlockedLevel = Math.min(maxCompletedLevel + 1, 7);
 
-  console.log('Completed levels:', completedLevels);
-  console.log('Highest unlocked level:', highestUnlockedLevel);
+  console.log('📊 Completed levels:', completedLevels);
+  console.log('📊 Max completed level:', maxCompletedLevel);
+  console.log('📊 Highest unlocked level:', highestUnlockedLevel);
+  console.log('📊 Will show nodes:', allLevelNames.slice(0, highestUnlockedLevel));
 
   // Create nodes and edges only for unlocked levels
   const allLevelNames = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
@@ -102,12 +104,12 @@ layout: default
   };
 
   // Calculations for centered bounds:
-  // Canvas: 1200x800 physical pixels
+  // Canvas: 1200x320 physical pixels (40% of 800)
   // scaleFactor: 0.75, with 2x global = 1.5 viewScale
-  // Virtual canvas: 1200/1.5 = 800 wide, 800/1.5 = 533 tall
-  // Desired bounds: 700x750 physical = 467x500 virtual (3x taller than original)
+  // Virtual canvas: 1200/1.5 = 800 wide, 320/1.5 = 213 tall
+  // Desired bounds: 700x200 physical = 467x133 virtual
   // Center horizontally: (800 - 467) / 2 = 167 virtual offset
-  // Center vertically: (533 - 500) / 2 = 17 virtual offset
+  // Center vertically: (213 - 133) / 2 = 40 virtual offset
   const levelSelectViz = new NetworkViz({
     canvas: levelSelectCanvas,
     nodes: levelNodes,
@@ -115,11 +117,11 @@ layout: default
     mode: 'display',
     randomSeed: 123,
     givenWords: levelNodes,
-    bounds: { x: 167, y: 17, width: 467, height: 500 },
+    bounds: { x: 167, y: 40, width: 467, height: 133 },
     scaleFactor: 0.75,  // With 2x multiplier = 1.5 viewScale
-    showBounds: true,   // Show red bounding box
+    showBounds: false,   // Hide red bounding box
     displayConfig: {
-      enablePhysics: true,
+      enablePhysics: false,  // Disable physics - nodes will stay where positioned
       enableDancing: false,
       showLabelsAlways: true,
       boxStyle: 'fitted',  // Fit to word width
@@ -186,9 +188,10 @@ layout: default
   };
 
   // Initialize nodes in vertical line (one at top, seven at bottom)
-  const centerX = 167 + 467 / 2;  // Center of bounds
-  const topY = 17 + 50;  // Start below top edge
-  const spacing = 60;  // Vertical spacing between nodes
+  const centerX = 167 + 467 / 2;  // Center of bounds horizontally
+  const topY = 40 + 20;  // Start near top of bounds
+  const totalHeight = 133 - 40;  // Height available in bounds
+  const spacing = levelNodes.length > 1 ? totalHeight / (levelNodes.length - 1) : 0;  // Space evenly
 
   levelNodes.forEach((node, index) => {
     levelSelectViz.nodePositions[node].x = centerX;
@@ -270,11 +273,22 @@ layout: default
       try {
         // Clear level completions
         localStorage.removeItem('completed_levels');
+        sessionStorage.removeItem('last_completed_level');
 
-        // Clear all puzzle progress
-        for (let i = 1; i <= 7; i++) {
-          localStorage.removeItem(`network_puzzle_Level ${i}_guessed`);
-        }
+        // Clear all puzzle progress using actual page titles
+        const puzzleTitles = [
+          'Humble beginnings',
+          'Learning to walk',
+          'Learning to run',
+          'Scramble',
+          'Recurrence',
+          'Invisible connections',
+          'Untitled'
+        ];
+
+        puzzleTitles.forEach(title => {
+          localStorage.removeItem(`network_puzzle_${title}_guessed`);
+        });
 
         console.log('✅ All progress erased');
         location.reload();

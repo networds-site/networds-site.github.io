@@ -15,10 +15,11 @@ layout: default
   <h1 style="margin-top: 1em;" id="puzzleTitle">{{ page.title }}</h1>
 
   <div style="position: relative; width: 100%; max-width: 1200px;">
-    <a href="{{ site.baseurl }}/" style="position: absolute; top: -45px; left: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background-color: white; border: 2px solid #ccc; border-radius: 4px; text-decoration: none; font-size: 24px; color: #333; cursor: pointer;" title="back to home">⌂</a>
     <button id="resetButton" style="position: absolute; top: -45px; right: 0; padding: 6px 14px; font-family: 'Gill Sans', sans-serif; font-size: 16px; background-color: white; color: black; border: 2px solid #ccc; border-radius: 4px; cursor: pointer;">reset</button>
     <canvas id="graphCanvas" width="1200" height="800" style="border: 1px solid #ccc; display: block; width: 100%;"></canvas>
 
+    {% comment %}
+    Temporarily disabled post-text overlay
     {% if page.post_text %}
     <div id="postTextOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; pointer-events: none; opacity: 0; z-index: 1000; background-color: rgba(255, 255, 255, 0.95);">
       <div style="padding: 30px 40px; max-width: 80%; text-align: center; font-family: 'Gill Sans', sans-serif; font-size: 24px; color: #2a9d8f; line-height: 1.5;">
@@ -26,6 +27,7 @@ layout: default
       </div>
     </div>
     {% endif %}
+    {% endcomment %}
   </div>
 
   <div style="margin-top: 20px;">
@@ -118,8 +120,10 @@ layout: default
     victoryAudio.play().catch(err => console.log('Victory audio play failed:', err));
   };
 
-  // Function to show post-text overlay with animation
+  // Function to show post-text overlay with animation (temporarily disabled)
   function showPostTextOverlay() {
+    // Temporarily disabled
+    /*
     {% if page.post_text %}
     const postTextOverlay = document.getElementById('postTextOverlay');
     if (!postTextOverlay) return;
@@ -147,6 +151,7 @@ layout: default
       postTextOverlay.style.display = 'none';
     }, 100 + FADE_IN_MS + STAY_MS + FADE_OUT_MS);
     {% endif %}
+    */
   }
 
     // Handle first interaction for audio context

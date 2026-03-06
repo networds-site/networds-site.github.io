@@ -16,8 +16,25 @@
   {% if site.description %}
   <meta name="description" content="{{ site.description }}">
   {% endif %}
+
+  <style>
+    .home-glyph {
+      position: fixed;
+      top: 1.5em;
+      right: 1.5em;
+      font-size: 1.5em;
+      color: #666;
+      text-decoration: none;
+      z-index: 1000;
+      transition: color 0.2s ease;
+    }
+    .home-glyph:hover {
+      color: #000;
+    }
+  </style>
 </head>
 <body>
+  <a href="{{ site.baseurl }}/" class="home-glyph" title="home">⌂</a>
   {{ content }}
 </body>
 </html>
