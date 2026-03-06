@@ -52,11 +52,17 @@ layout: default
   headerViz.nodePositions['theory'].x = 325;
   headerViz.nodePositions['theory'].y = 50;
 
+  // Override getNodeColor to always return white
+  headerViz.getNodeColor = function() {
+    return '#ffffff';
+  };
+
   headerViz.start();
 </script>
 
 <main style="text-align: center; margin-top: 40px;">
-  <div style="display: flex; justify-content: center; align-items: center;">
+  <div style="position: relative; display: inline-block;">
+    <button id="eraseAllProgressButton" style="position: absolute; top: 10px; right: 10px; padding: 8px 16px; font-family: 'Gill Sans', sans-serif; font-size: 14px; background-color: white; color: #e63946; border: 2px solid #e63946; border-radius: 4px; cursor: pointer;">erase all progress</button>
     <canvas id="levelSelectViz" width="1200" height="800" style="display: block;"></canvas>
   </div>
 </main>
@@ -65,16 +71,29 @@ layout: default
   // Initialize the level selection visualization
   const levelSelectCanvas = document.getElementById('levelSelectViz');
 
-  // Create nodes and edges for level chain (one -> two -> ... -> seven)
-  const levelNodes = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
-  const levelEdges = [
-    { from: 'one', to: 'two', direction: 'forward' },
-    { from: 'two', to: 'three', direction: 'forward' },
-    { from: 'three', to: 'four', direction: 'forward' },
-    { from: 'four', to: 'five', direction: 'forward' },
-    { from: 'five', to: 'six', direction: 'forward' },
-    { from: 'six', to: 'seven', direction: 'forward' }
-  ];
+  // Get completed levels from localStorage
+  let completedLevels = [];
+  try {
+    completedLevels = JSON.parse(localStorage.getItem('completed_levels') || '[]');
+  } catch (e) {
+    console.error('Error loading completed levels:', e);
+  }
+
+  // Determine highest unlocked level (completed levels + 1)
+  const maxCompletedLevel = completedLevels.length > 0 ? Math.max(...completedLevels) : 0;
+  const highestUnlockedLevel = Math.min(maxCompletedLevel + 1, 7);
+
+  console.log('Completed levels:', completedLevels);
+  console.log('Highest unlocked level:', highestUnlockedLevel);
+
+  // Create nodes and edges only for unlocked levels
+  const allLevelNames = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+  const levelNodes = allLevelNames.slice(0, highestUnlockedLevel);
+
+  const levelEdges = [];
+  for (let i = 0; i < levelNodes.length - 1; i++) {
+    levelEdges.push({ from: levelNodes[i], to: levelNodes[i + 1], direction: 'forward' });
+  }
 
   // Map node names to level numbers
   const nodeToLevel = {
@@ -125,9 +144,45 @@ layout: default
     'rgb(255, 204, 255)'   // Pastel Violet
   ];
 
+  // Animation state for newly completed level
+  let animatingLevel = null;
+  let animationProgress = 0;
+  const ANIMATION_DURATION = 2000; // 2 seconds
+  let animationStartTime = null;
+
+  // Check if there's a newly completed level that needs animation
+  const lastCompletedLevel = sessionStorage.getItem('last_completed_level');
+  if (lastCompletedLevel) {
+    const levelNum = parseInt(lastCompletedLevel);
+    if (completedLevels.includes(levelNum)) {
+      animatingLevel = levelNum;
+      sessionStorage.removeItem('last_completed_level'); // Clear flag
+    }
+  }
+
   levelSelectViz.getNodeColor = function(node) {
     const index = levelNodes.indexOf(node);
-    return roygbivColors[index];
+    const levelNum = index + 1;  // one=1, two=2, etc.
+
+    // If this is the animating level, interpolate between white and color
+    if (animatingLevel === levelNum && animationProgress < 1) {
+      const targetColor = roygbivColors[index];
+      // Parse RGB from target color (format: "rgb(r, g, b)")
+      const match = targetColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+      if (match) {
+        const r = Math.round(255 + (parseInt(match[1]) - 255) * animationProgress);
+        const g = Math.round(255 + (parseInt(match[2]) - 255) * animationProgress);
+        const b = Math.round(255 + (parseInt(match[3]) - 255) * animationProgress);
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+    }
+
+    // If level is completed, show its color, otherwise white
+    if (completedLevels.includes(levelNum)) {
+      return roygbivColors[index];
+    } else {
+      return '#ffffff';  // White for incomplete
+    }
   };
 
   // Initialize nodes in vertical line (one at top, seven at bottom)
@@ -141,6 +196,26 @@ layout: default
   });
 
   levelSelectViz.start();
+
+  // Animation loop for level completion
+  function animateCompletion() {
+    if (animatingLevel !== null) {
+      const now = Date.now();
+      if (animationStartTime === null) {
+        animationStartTime = now;
+      }
+
+      const elapsed = now - animationStartTime;
+      animationProgress = Math.min(elapsed / ANIMATION_DURATION, 1);
+
+      if (animationProgress >= 1) {
+        animatingLevel = null;  // Animation complete
+        animationStartTime = null;
+      }
+    }
+    requestAnimationFrame(animateCompletion);
+  }
+  animateCompletion();
 
   // Add double-click handler for level selection
   levelSelectCanvas.addEventListener('dblclick', (e) => {
@@ -187,5 +262,26 @@ layout: default
     }
 
     levelSelectCanvas.style.cursor = hovering ? 'pointer' : 'default';
+  });
+
+  // Erase all progress button handler
+  document.getElementById('eraseAllProgressButton').addEventListener('click', () => {
+    if (confirm('erase ALL progress? this will reset level completions AND puzzle progress for all levels.')) {
+      try {
+        // Clear level completions
+        localStorage.removeItem('completed_levels');
+
+        // Clear all puzzle progress
+        for (let i = 1; i <= 7; i++) {
+          localStorage.removeItem(`network_puzzle_Level ${i}_guessed`);
+        }
+
+        console.log('✅ All progress erased');
+        location.reload();
+      } catch (e) {
+        console.error('Error erasing progress:', e);
+        alert('failed to erase progress. check console for details.');
+      }
+    }
   });
 </script>

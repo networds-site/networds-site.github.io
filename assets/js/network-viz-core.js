@@ -215,6 +215,22 @@ class NetworkViz {
       // Check victory
       if (found && this.guessedWords.size === this.nodes.length) {
         this.playVictoryMusic();
+
+        // Mark level as complete (persistent across progress resets)
+        if (this.level) {
+          try {
+            const completedLevels = JSON.parse(localStorage.getItem('completed_levels') || '[]');
+            if (!completedLevels.includes(this.level)) {
+              completedLevels.push(this.level);
+              localStorage.setItem('completed_levels', JSON.stringify(completedLevels));
+              // Flag for home page animation
+              sessionStorage.setItem('last_completed_level', this.level.toString());
+              console.log(`✅ Level ${this.level} marked as complete!`);
+            }
+          } catch (e) {
+            console.error('Error saving level completion:', e);
+          }
+        }
       }
     } else {
       this.playSound('', 'negative');

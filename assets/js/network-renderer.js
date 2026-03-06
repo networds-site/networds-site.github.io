@@ -166,14 +166,14 @@ function drawEdgeCircles(context) {
   if (edge.direction === 'forward' || edge.direction === 'bidirectional') {
     const toIntersect = lineRectIntersection(from.x, from.y, to.x, to.y, to.x, to.y, toBox.width, toBox.height);
     ctx.beginPath();
-    ctx.arc(toIntersect.x, toIntersect.y, 7.5 * viewScale, 0, 2 * Math.PI);
+    ctx.arc(toIntersect.x, toIntersect.y, 6.0 * viewScale, 0, 2 * Math.PI);  // 80% of 7.5
     ctx.fill();
   }
 
   if (edge.direction === 'backward' || edge.direction === 'bidirectional') {
     const fromIntersect = lineRectIntersection(to.x, to.y, from.x, from.y, from.x, from.y, fromBox.width, fromBox.height);
     ctx.beginPath();
-    ctx.arc(fromIntersect.x, fromIntersect.y, 7.5 * viewScale, 0, 2 * Math.PI);
+    ctx.arc(fromIntersect.x, fromIntersect.y, 6.0 * viewScale, 0, 2 * Math.PI);  // 80% of 7.5
     ctx.fill();
   }
 }
