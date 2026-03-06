@@ -108,12 +108,11 @@ layout: default
   };
 
   // Calculations for bounds to align with header:
-  // Canvas: 1200x320 physical pixels (40% of 800)
-  // Header bounds start at x=25, width=450 (header uses scaleFactor 1.2 -> viewScale 2.4)
-  // For level select: scaleFactor 0.75 -> viewScale 1.5
-  // Virtual canvas: 1200/1.5 = 800 wide, 320/1.5 = 213 tall
-  // Align with header: x=25, use full available width
-  // Width: 450, Height: use most of canvas height minus margins
+  // Header: bounds { x: 25, width: 450 } with viewScale 2.4 = 1080 pixels wide on screen
+  // To match: need 1080 pixels / 1.5 viewScale = 720 virtual units wide
+  // Header x: 25 virtual × 2.4 = 60 pixels from left
+  // To match: 60 pixels / 1.5 = 40 virtual units from left
+  // Canvas: 1200x320 physical, viewScale 1.5 means 800x213 virtual
   const levelSelectViz = new NetworkViz({
     canvas: levelSelectCanvas,
     nodes: levelNodes,
@@ -121,7 +120,7 @@ layout: default
     mode: 'display',
     randomSeed: 123,
     givenWords: levelNodes,
-    bounds: { x: 25, y: 10, width: 450, height: 190 },
+    bounds: { x: 40, y: 10, width: 720, height: 190 },
     scaleFactor: 0.75,  // With 2x multiplier = 1.5 viewScale
     showBounds: true,   // Show red bounding box
     displayConfig: {
@@ -192,7 +191,7 @@ layout: default
   };
 
   // Initialize nodes in vertical line (one at top, seven at bottom)
-  const centerX = 25 + 450 / 2;  // Center of bounds horizontally (matches header)
+  const centerX = 40 + 720 / 2;  // Center of bounds horizontally (matches header in pixels)
   const topY = 10 + 20;  // Start near top of bounds
   const bottomY = 10 + 190 - 20;  // End near bottom of bounds
   const spacing = levelNodes.length > 1 ? (bottomY - topY) / (levelNodes.length - 1) : 0;  // Space evenly
