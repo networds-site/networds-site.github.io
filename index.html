@@ -79,6 +79,9 @@ layout: default
     console.error('Error loading completed levels:', e);
   }
 
+  // Create nodes and edges only for unlocked levels
+  const allLevelNames = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+
   // Determine highest unlocked level (completed levels + 1)
   const maxCompletedLevel = completedLevels.length > 0 ? Math.max(...completedLevels) : 0;
   const highestUnlockedLevel = Math.min(maxCompletedLevel + 1, 7);
@@ -88,8 +91,6 @@ layout: default
   console.log('📊 Highest unlocked level:', highestUnlockedLevel);
   console.log('📊 Will show nodes:', allLevelNames.slice(0, highestUnlockedLevel));
 
-  // Create nodes and edges only for unlocked levels
-  const allLevelNames = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
   const levelNodes = allLevelNames.slice(0, highestUnlockedLevel);
 
   const levelEdges = [];
