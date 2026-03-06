@@ -11,8 +11,8 @@ layout: default
 <script src="{{ '/assets/js/network-viz-core.js' | relative_url }}"></script>
 
 <header style="text-align: center; margin-top: 20px; margin-bottom: 0px;">
-  <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 0px;">
-    <canvas id="headerViz" width="1200" height="240" style="display: block;"></canvas>
+  <div style="display: flex; justify-content: center; align-items: center; margin: 0; padding: 0;">
+    <canvas id="headerViz" width="1200" height="240" style="display: block; margin: 0; padding: 0;"></canvas>
   </div>
 </header>
 
@@ -60,9 +60,9 @@ layout: default
   headerViz.start();
 </script>
 
-<main style="text-align: center; margin-top: 0px; padding-top: 0px;">
-  <div style="display: flex; justify-content: center; align-items: center;">
-    <canvas id="levelSelectViz" width="1200" height="320" style="display: block;"></canvas>
+<main style="text-align: center; margin: 0; padding: 0;">
+  <div style="display: flex; justify-content: center; align-items: center; margin: 0; padding: 0;">
+    <canvas id="levelSelectViz" width="1200" height="320" style="display: block; margin: 0; padding: 0;"></canvas>
   </div>
 </main>
 
@@ -107,12 +107,10 @@ layout: default
     'five': 5, 'six': 6, 'seven': 7
   };
 
-  // Calculations for bounds to align with header:
-  // Header: bounds { x: 25, width: 450 } with viewScale 2.4 = 1080 pixels wide on screen
-  // To match: need 1080 pixels / 1.5 viewScale = 720 virtual units wide
-  // Header x: 25 virtual × 2.4 = 60 pixels from left
-  // To match: 60 pixels / 1.5 = 40 virtual units from left
-  // Canvas: 1200x320 physical, viewScale 1.5 means 800x213 virtual
+  // Match header bounds in physical pixels:
+  // Header: x=25 virtual × 2.4 scale = 60px, width=450 × 2.4 = 1080px
+  // Level: x=40 virtual × 1.5 scale = 60px, width=720 × 1.5 = 1080px
+  // PERFECT ALIGNMENT!
   const levelSelectViz = new NetworkViz({
     canvas: levelSelectCanvas,
     nodes: levelNodes,
