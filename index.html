@@ -10,8 +10,8 @@ layout: default
 <script src="{{ '/assets/js/network-interaction.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/network-viz-core.js' | relative_url }}"></script>
 
-<header style="text-align: center; margin-top: 20px;">
-  <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
+<header style="text-align: center; margin-top: 20px; margin-bottom: 0px;">
+  <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 0px;">
     <canvas id="headerViz" width="1200" height="240" style="display: block;"></canvas>
   </div>
 </header>
@@ -60,9 +60,9 @@ layout: default
   headerViz.start();
 </script>
 
-<main style="text-align: center; margin-top: 0px;">
-  <div style="position: relative; display: block; width: 1200px; margin: 0 auto;">
-    <button id="eraseAllProgressButton" style="position: absolute; top: 10px; right: 10px; padding: 8px 16px; font-family: 'Gill Sans', sans-serif; font-size: 14px; background-color: white; color: #e63946; border: 2px solid #e63946; border-radius: 4px; cursor: pointer; z-index: 10;">erase all progress</button>
+<main style="text-align: center; margin-top: 0px; padding-top: 0px;">
+  <div style="position: relative; display: flex; justify-content: center; align-items: center;">
+    <button id="eraseAllProgressButton" style="position: absolute; top: 10px; right: calc(50% - 590px); padding: 8px 16px; font-family: 'Gill Sans', sans-serif; font-size: 14px; background-color: white; color: #e63946; border: 2px solid #e63946; border-radius: 4px; cursor: pointer; z-index: 10;">erase all progress</button>
     <canvas id="levelSelectViz" width="1200" height="320" style="display: block;"></canvas>
   </div>
 </main>
@@ -104,13 +104,13 @@ layout: default
     'five': 5, 'six': 6, 'seven': 7
   };
 
-  // Calculations for centered bounds:
+  // Calculations for bounds to align with header:
   // Canvas: 1200x320 physical pixels (40% of 800)
-  // scaleFactor: 0.75, with 2x global = 1.5 viewScale
+  // Header bounds start at x=25, width=450 (header uses scaleFactor 1.2 -> viewScale 2.4)
+  // For level select: scaleFactor 0.75 -> viewScale 1.5
   // Virtual canvas: 1200/1.5 = 800 wide, 320/1.5 = 213 tall
-  // Desired bounds: 700x200 physical = 467x133 virtual
-  // Center horizontally: (800 - 467) / 2 = 167 virtual offset
-  // Center vertically: (213 - 133) / 2 = 40 virtual offset
+  // Align with header: x=25, use full available width
+  // Width: 450, Height: use most of canvas height minus margins
   const levelSelectViz = new NetworkViz({
     canvas: levelSelectCanvas,
     nodes: levelNodes,
@@ -118,7 +118,7 @@ layout: default
     mode: 'display',
     randomSeed: 123,
     givenWords: levelNodes,
-    bounds: { x: 167, y: 40, width: 467, height: 133 },
+    bounds: { x: 25, y: 10, width: 450, height: 190 },
     scaleFactor: 0.75,  // With 2x multiplier = 1.5 viewScale
     showBounds: true,   // Show red bounding box
     displayConfig: {
@@ -189,10 +189,10 @@ layout: default
   };
 
   // Initialize nodes in vertical line (one at top, seven at bottom)
-  const centerX = 167 + 467 / 2;  // Center of bounds horizontally
-  const topY = 40 + 20;  // Start near top of bounds
-  const totalHeight = 133 - 40;  // Height available in bounds
-  const spacing = levelNodes.length > 1 ? totalHeight / (levelNodes.length - 1) : 0;  // Space evenly
+  const centerX = 25 + 450 / 2;  // Center of bounds horizontally (matches header)
+  const topY = 10 + 20;  // Start near top of bounds
+  const bottomY = 10 + 190 - 20;  // End near bottom of bounds
+  const spacing = levelNodes.length > 1 ? (bottomY - topY) / (levelNodes.length - 1) : 0;  // Space evenly
 
   levelNodes.forEach((node, index) => {
     levelSelectViz.nodePositions[node].x = centerX;
