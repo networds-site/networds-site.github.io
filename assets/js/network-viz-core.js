@@ -306,11 +306,14 @@ class NetworkViz {
         throw new Error(`Missing precomputed positions for ${missingNodes.length} nodes`);
       }
 
-      // Use precomputed positions, start at Phase 4 (steady state)
+      // Use precomputed positions (centered at origin), translate to virtual canvas center
+      const centerX = this.virtualWidth / 2;
+      const centerY = this.virtualHeight / 2;
+
       this.nodes.forEach(node => {
         this.nodePositions[node] = {
-          x: this.precomputedPositions[node].x,
-          y: this.precomputedPositions[node].y,
+          x: this.precomputedPositions[node].x + centerX,
+          y: this.precomputedPositions[node].y + centerY,
           z: 0,  // Already in 2D after Phase 3
           vx: 0,
           vy: 0,
@@ -321,8 +324,8 @@ class NetworkViz {
         };
       });
 
-      // Set physics step count to Phase 4 start to skip annealing
-      this.physicsStepCount = 10000;
+      // Set physics step count to Phase 4 start to skip annealing (3x longer now = 30000)
+      this.physicsStepCount = 30000;
     } else {
       // No precomputed positions, use random initialization (will anneal)
       if (this.mode === 'game') {
@@ -539,7 +542,7 @@ class NetworkViz {
     if (this.displayConfig.enablePhysics) {
       // In Phase 4 (steady state), use fewer steps per frame like the old version
       // This prevents numerical instability and high-frequency oscillations
-      const PHASE_3_STEPS = 10000;
+      const PHASE_3_STEPS = 30000;  // 3x longer
       const inPhase4 = this.physicsStepCount >= PHASE_3_STEPS;
       const stepsPerFrame = inPhase4 ? 5 : this.physicsConfig.physicsStepsPerFrame;
 

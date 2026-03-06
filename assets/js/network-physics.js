@@ -220,9 +220,9 @@ function updateGamePhysics(context) {
   const perturbationStddev = 0.5;
 
   // Phase constants
-  const PHASE_1_STEPS = 2500;
-  const PHASE_2_STEPS = 5000;
-  const PHASE_3_STEPS = 10000;
+  const PHASE_1_STEPS = 7500;   // 3x longer
+  const PHASE_2_STEPS = 15000;  // 3x longer
+  const PHASE_3_STEPS = 30000;  // 3x longer
 
   const inPhase1 = physicsStepCount < PHASE_1_STEPS;
   const inPhase2 = physicsStepCount >= PHASE_1_STEPS && physicsStepCount < PHASE_2_STEPS;

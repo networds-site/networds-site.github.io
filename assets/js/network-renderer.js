@@ -212,9 +212,9 @@ function render(context) {
 
   // Draw game mode UI elements
   if (mode === 'game') {
-    const PHASE_1_STEPS = 2500;
-    const PHASE_2_STEPS = 5000;
-    const PHASE_3_STEPS = 10000;
+    const PHASE_1_STEPS = 7500;   // 3x longer
+    const PHASE_2_STEPS = 15000;  // 3x longer
+    const PHASE_3_STEPS = 30000;  // 3x longer
     const inPhase4 = physicsStepCount >= PHASE_3_STEPS;
 
     // Draw "annealing..." text if not in steady state
@@ -292,7 +292,7 @@ function render(context) {
 
   // Draw game mode bottom text
   if (mode === 'game') {
-    const PHASE_3_STEPS = 10000;
+    const PHASE_3_STEPS = 30000;  // 3x longer
     const inPhase4 = physicsStepCount >= PHASE_3_STEPS;
 
     // Draw drag instruction

@@ -124,9 +124,9 @@ function runPhysicsSimulation(puzzleData) {
   const DAMPING = 0.03;
   const MAX_VELOCITY = 100;
 
-  const PHASE_1_STEPS = 2500;
-  const PHASE_2_STEPS = 5000;
-  const PHASE_3_STEPS = 10000;
+  const PHASE_1_STEPS = 7500;   // 3x longer
+  const PHASE_2_STEPS = 15000;  // 3x longer
+  const PHASE_3_STEPS = 30000;  // 3x longer
 
   // Initialize positions
   const nodePositions = {};
@@ -337,12 +337,23 @@ function runPhysicsSimulation(puzzleData) {
     });
   }
 
-  // Extract final positions (x, y only)
+  // Extract final positions (x, y only) and center at COM = 0
   const finalPositions = {};
+
+  // Calculate center of mass
+  let comX = 0, comY = 0;
+  nodes.forEach(node => {
+    comX += nodePositions[node].x;
+    comY += nodePositions[node].y;
+  });
+  comX /= nodes.length;
+  comY /= nodes.length;
+
+  // Store positions centered at origin
   nodes.forEach(node => {
     finalPositions[node] = {
-      x: nodePositions[node].x,
-      y: nodePositions[node].y
+      x: nodePositions[node].x - comX,
+      y: nodePositions[node].y - comY
     };
   });
 
@@ -375,7 +386,7 @@ function main() {
     }
 
     console.log(`   Nodes: ${puzzleData.nodes.length}, Seed: ${puzzleData.randomSeed}`);
-    console.log(`   Running physics simulation (10,000 steps)...`);
+    console.log(`   Running physics simulation (30,000 steps)...`);
 
     const startTime = Date.now();
     const positions = runPhysicsSimulation(puzzleData);

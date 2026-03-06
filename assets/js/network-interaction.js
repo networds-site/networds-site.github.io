@@ -52,7 +52,7 @@ function handleMouseDown(context, e) {
 
   // Game mode: only allow dragging in phase 4
   if (mode === 'game') {
-    const PHASE_3_STEPS = 10000;
+    const PHASE_3_STEPS = 30000;  // 3x longer
     if (physicsStepCount < PHASE_3_STEPS) return null;
   }
 
@@ -143,7 +143,7 @@ function handleMouseMove(context, e) {
     }
     // Game mode: only show grab cursor in phase 4
     if (mode === 'game') {
-      const PHASE_3_STEPS = 10000;
+      const PHASE_3_STEPS = 30000;  // 3x longer
       if (physicsStepCount < PHASE_3_STEPS) {
         canvas.style.cursor = 'default';
         return;
