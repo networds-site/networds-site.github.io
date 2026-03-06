@@ -18,14 +18,6 @@ layout: default
     <button id="resetButton" style="position: absolute; top: -45px; right: 0; padding: 6px 14px; font-family: 'Gill Sans', sans-serif; font-size: 16px; background-color: white; color: black; border: 2px solid #ccc; border-radius: 4px; cursor: pointer;">reset</button>
     <canvas id="graphCanvas" width="1200" height="800" style="border: 1px solid #ccc; display: block; width: 100%;"></canvas>
 
-    {% if page.pre_text %}
-    <div id="preTextOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; z-index: 1000; background-color: rgba(255, 255, 255, 0.95);">
-      <div style="padding: 30px 40px; max-width: 80%; text-align: center; font-family: 'Gill Sans', sans-serif; font-size: 24px; color: #333; line-height: 1.5;">
-        {{ page.pre_text }}
-      </div>
-    </div>
-    {% endif %}
-
     {% if page.post_text %}
     <div id="postTextOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; align-items: center; justify-content: center; pointer-events: none; opacity: 0; z-index: 1000; background-color: rgba(255, 255, 255, 0.95);">
       <div style="padding: 30px 40px; max-width: 80%; text-align: center; font-family: 'Gill Sans', sans-serif; font-size: 24px; color: #2a9d8f; line-height: 1.5;">
@@ -76,24 +68,50 @@ layout: default
     console.error('Error loading saved progress:', e);
   }
 
-  // Create NetworkViz instance
-  const canvas = document.getElementById('graphCanvas');
-  const viz = new NetworkViz({
-    canvas: canvas,
-    nodes: puzzleData.nodes,
-    edges: puzzleData.edges,
-    mode: 'game',
-    randomSeed: puzzleData.randomSeed,
-    givenWords: puzzleData.givenWords,
-    savedWords: savedWords,  // Pass saved words separately so they get colored
-    gimmick: puzzleData.gimmick,
-    puzzleName: puzzleData.puzzleName,
-    storageKey: STORAGE_KEY,
-    victoryText: {{ page.victory_text | jsonify }}
-  });
+  // Load precomputed positions
+  async function loadPrecomputedPositions() {
+    try {
+      const response = await fetch('{{ "/assets/data/puzzle_layouts.json" | relative_url }}');
+      if (!response.ok) {
+        console.warn('⚠️  Precomputed layouts file not found (status ' + response.status + ')');
+        return null;
+      }
+      const layouts = await response.json();
+      const layout = layouts[puzzleData.puzzleName];
+      if (!layout) {
+        console.warn('⚠️  No precomputed layout found for puzzle:', puzzleData.puzzleName);
+        return null;
+      }
+      return layout.positions;
+    } catch (e) {
+      console.warn('⚠️  Error loading precomputed positions:', e);
+      return null;
+    }
+  }
 
-  // Override victory music function
-  viz.playVictoryMusic = function() {
+  // Initialize puzzle with precomputed positions
+  loadPrecomputedPositions().then(precomputedPositions => {
+    const canvas = document.getElementById('graphCanvas');
+    const viz = new NetworkViz({
+      canvas: canvas,
+      nodes: puzzleData.nodes,
+      edges: puzzleData.edges,
+      mode: 'game',
+      randomSeed: puzzleData.randomSeed,
+      givenWords: puzzleData.givenWords,
+      savedWords: savedWords,  // Pass saved words separately so they get colored
+      gimmick: puzzleData.gimmick,
+      puzzleName: puzzleData.puzzleName,
+      level: {{ page.level | jsonify }},
+      storageKey: STORAGE_KEY,
+      victoryText: {{ page.victory_text | jsonify }},
+      precomputedPositions: precomputedPositions
+    });
+
+    window.viz = viz;  // Make available globally for debugging
+
+    // Override victory music function
+    viz.playVictoryMusic = function() {
     const victoryAudio = new Audio('{{site.baseurl}}/audio/{{ page.victory_audio }}');
     victoryAudio.volume = 0.5;
     victoryAudio.play().catch(err => console.log('Victory audio play failed:', err));
@@ -130,28 +148,28 @@ layout: default
     {% endif %}
   }
 
-  // Handle first interaction for audio context
-  const wasAlreadyComplete = viz.guessedWords.size === viz.nodes.length;
-  const handleFirstInteraction = () => {
-    if (NetworkViz.audioContext && NetworkViz.audioContext.state === 'suspended') {
-      NetworkViz.audioContext.resume();
-    }
+    // Handle first interaction for audio context
+    const wasAlreadyComplete = viz.guessedWords.size === viz.nodes.length;
+    const handleFirstInteraction = () => {
+      if (NetworkViz.audioContext && NetworkViz.audioContext.state === 'suspended') {
+        NetworkViz.audioContext.resume();
+      }
 
-    if (wasAlreadyComplete) {
-      viz.playVictoryMusic();
-      showPostTextOverlay();
-    }
-  };
+      if (wasAlreadyComplete) {
+        viz.playVictoryMusic();
+        showPostTextOverlay();
+      }
+    };
 
-  document.addEventListener('click', handleFirstInteraction, { once: true });
+    document.addEventListener('click', handleFirstInteraction, { once: true });
 
-  // Setup guess input
-  const guessInput = document.getElementById('guessInput');
-  const feedbackEl = document.getElementById('feedback');
+    // Setup guess input
+    const guessInput = document.getElementById('guessInput');
+    const feedbackEl = document.getElementById('feedback');
 
-  guessInput.addEventListener('focus', handleFirstInteraction, { once: true });
+    guessInput.addEventListener('focus', handleFirstInteraction, { once: true });
 
-  guessInput.addEventListener('keypress', (e) => {
+    guessInput.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
       const guess = guessInput.value;
       guessInput.value = '';
@@ -180,19 +198,20 @@ layout: default
         showPostTextOverlay();
       }
     }
-  });
+    });
 
-  // Setup reset button
-  const resetButton = document.getElementById('resetButton');
-  resetButton.addEventListener('click', () => {
-    if (confirm('delete puzzle progress?')) {
-      viz.resetProgress();
-      location.reload();
-    }
-  });
+    // Setup reset button
+    const resetButton = document.getElementById('resetButton');
+    resetButton.addEventListener('click', () => {
+      if (confirm('delete puzzle progress?')) {
+        viz.resetProgress();
+        location.reload();
+      }
+    });
 
-  // Start visualization
-  viz.start();
+    // Start visualization
+    viz.start();
+  });  // End of loadPrecomputedPositions().then()
 
   // Handle pre-text overlay animation
   {% if page.pre_text %}

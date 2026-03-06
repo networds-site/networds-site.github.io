@@ -1,0 +1,10 @@
+{
+  "name": "networds-site",
+  "version": "1.0.0",
+  "description": "String Theory puzzle game",
+  "scripts": {
+    "precompute": "node scripts/precompute_layouts.js",
+    "build": "npm run precompute && bundle exec jekyll build",
+    "serve": "npm run precompute && bundle exec jekyll serve"
+  }
+}

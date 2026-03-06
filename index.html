@@ -55,16 +55,137 @@ layout: default
   headerViz.start();
 </script>
 
-<main>
-  <ul style="list-style: none; padding: 0;">
-    {% assign sorted_puzzles = site.puzzles | sort: 'level' %}
-    {% for puzzle in sorted_puzzles %}
-      <li style="margin-bottom: 0.5em;">
-        <a href="{{ puzzle.url }}">{{ puzzle.level }}) {{ puzzle.title | downcase }}</a>
-      </li>
-    {% endfor %}
-  </ul>
-
-  <footer>
-  </footer>
+<main style="text-align: center; margin-top: 40px;">
+  <div style="display: flex; justify-content: center; align-items: center;">
+    <canvas id="levelSelectViz" width="1200" height="800" style="display: block;"></canvas>
+  </div>
 </main>
+
+<script>
+  // Initialize the level selection visualization
+  const levelSelectCanvas = document.getElementById('levelSelectViz');
+
+  // Create nodes and edges for level chain (one -> two -> ... -> seven)
+  const levelNodes = ['one', 'two', 'three', 'four', 'five', 'six', 'seven'];
+  const levelEdges = [
+    { from: 'one', to: 'two', direction: 'forward' },
+    { from: 'two', to: 'three', direction: 'forward' },
+    { from: 'three', to: 'four', direction: 'forward' },
+    { from: 'four', to: 'five', direction: 'forward' },
+    { from: 'five', to: 'six', direction: 'forward' },
+    { from: 'six', to: 'seven', direction: 'forward' }
+  ];
+
+  // Map node names to level numbers
+  const nodeToLevel = {
+    'one': 1, 'two': 2, 'three': 3, 'four': 4,
+    'five': 5, 'six': 6, 'seven': 7
+  };
+
+  // Calculations for centered bounds:
+  // Canvas: 1200x800 physical pixels
+  // scaleFactor: 0.75, with 2x global = 1.5 viewScale
+  // Virtual canvas: 1200/1.5 = 800 wide, 800/1.5 = 533 tall
+  // Desired bounds: 700x750 physical = 467x500 virtual (3x taller than original)
+  // Center horizontally: (800 - 467) / 2 = 167 virtual offset
+  // Center vertically: (533 - 500) / 2 = 17 virtual offset
+  const levelSelectViz = new NetworkViz({
+    canvas: levelSelectCanvas,
+    nodes: levelNodes,
+    edges: levelEdges,
+    mode: 'display',
+    randomSeed: 123,
+    givenWords: levelNodes,
+    bounds: { x: 167, y: 17, width: 467, height: 500 },
+    scaleFactor: 0.75,  // With 2x multiplier = 1.5 viewScale
+    showBounds: true,   // Show red bounding box
+    displayConfig: {
+      enablePhysics: true,
+      enableDancing: false,
+      showLabelsAlways: true,
+      boxStyle: 'fitted',  // Fit to word width
+      useBoundaryRepulsion: false  // Use center-to-center repulsion (not edge-aware)
+    },
+    physicsConfig: {
+      physicsStepsPerFrame: 10,
+      lengthScale: 70,
+      repulsionFactor: 0.05,
+      attractionFactor: 0.4
+    }
+  });
+
+  // Override getNodeColor to use pastel ROYGBIV colors
+  const roygbivColors = [
+    'rgb(255, 204, 204)',  // Pastel Red
+    'rgb(255, 229, 204)',  // Pastel Orange
+    'rgb(255, 255, 204)',  // Pastel Yellow
+    'rgb(204, 255, 204)',  // Pastel Green
+    'rgb(204, 229, 255)',  // Pastel Blue
+    'rgb(229, 204, 255)',  // Pastel Indigo
+    'rgb(255, 204, 255)'   // Pastel Violet
+  ];
+
+  levelSelectViz.getNodeColor = function(node) {
+    const index = levelNodes.indexOf(node);
+    return roygbivColors[index];
+  };
+
+  // Initialize nodes in vertical line (one at top, seven at bottom)
+  const centerX = 167 + 467 / 2;  // Center of bounds
+  const topY = 17 + 50;  // Start below top edge
+  const spacing = 60;  // Vertical spacing between nodes
+
+  levelNodes.forEach((node, index) => {
+    levelSelectViz.nodePositions[node].x = centerX;
+    levelSelectViz.nodePositions[node].y = topY + index * spacing;
+  });
+
+  levelSelectViz.start();
+
+  // Add double-click handler for level selection
+  levelSelectCanvas.addEventListener('dblclick', (e) => {
+    const rect = levelSelectCanvas.getBoundingClientRect();
+    const screenX = (e.clientX - rect.left) * (levelSelectCanvas.width / rect.width);
+    const screenY = (e.clientY - rect.top) * (levelSelectCanvas.height / rect.height);
+
+    // Convert to virtual coordinates
+    const virtualPos = levelSelectViz.toVirtualCoords({ x: screenX, y: screenY });
+
+    // Check which node was double-clicked
+    for (const node of levelNodes) {
+      const pos = levelSelectViz.nodePositions[node];
+      const box = levelSelectViz.getBoxDimensions(node);
+
+      if (Math.abs(virtualPos.x - pos.x) <= box.width / 2 &&
+          Math.abs(virtualPos.y - pos.y) <= box.height / 2) {
+        // Navigate to the level using the mapping
+        const levelNum = nodeToLevel[node];
+        window.location.href = `{{ site.baseurl }}/level${levelNum}/`;
+        break;
+      }
+    }
+  });
+
+  // Add hover effect - change cursor
+  levelSelectCanvas.addEventListener('mousemove', (e) => {
+    const rect = levelSelectCanvas.getBoundingClientRect();
+    const screenX = (e.clientX - rect.left) * (levelSelectCanvas.width / rect.width);
+    const screenY = (e.clientY - rect.top) * (levelSelectCanvas.height / rect.height);
+
+    const virtualPos = levelSelectViz.toVirtualCoords({ x: screenX, y: screenY });
+
+    let hovering = false;
+    for (const node of levelNodes) {
+      const pos = levelSelectViz.nodePositions[node];
+      const box = levelSelectViz.getBoxDimensions(node);
+
+      if (Math.abs(virtualPos.x - pos.x) <= box.width / 2 &&
+          Math.abs(virtualPos.y - pos.y) <= box.height / 2) {
+        hovering = true;
+        break;
+      }
+    }
+
+    levelSelectCanvas.style.cursor = hovering ? 'pointer' : 'default';
+  });
+</script>

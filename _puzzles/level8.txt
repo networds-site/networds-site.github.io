@@ -1,7 +1,0 @@
-dummy->level
-
-given: dummy
-
-random seed: 8
-
-name: Level 8

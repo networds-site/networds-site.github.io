@@ -1,12 +1,11 @@
 ---
 layout: network_puzzle
 type: network_puzzle
-title: Old parts in new form [to be made]
+title: Invisible connections
 origin:
 level: 6
 data_file: level6.txt
-victory_audio: jeux_d_eau.mp3
-victory_text: "Ravel - Jeux d'eau"
-pre_text: "...and as in any great mystery, the connections between things are not always clear at the outset."
-post_text: "Fun fact: Nobel Laureate Roger Penrose got this far and gave up."
+victory_audio: arabesque_1.mp3
+victory_text: "Debussy - Arabesque No. 1"
+post_text: "Fun fact: almost all four-letter words are connected by sequences of single-letter swaps. One exception is \"iron,\" which lives on its own little island with \"icon.\""
 ---

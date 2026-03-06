@@ -7,6 +7,5 @@ level: 2
 data_file: level2.txt
 victory_audio: well_tempered_clavier.mp3
 victory_text: "Bach - Well-Tempered Clavier, Prelude"
-pre_text: "Get the picture?"
 post_text: "Beautiful. You're learning fast."
 ---

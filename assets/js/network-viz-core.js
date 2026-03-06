@@ -25,8 +25,10 @@ class NetworkViz {
     this.onGuess = config.onGuess || null;
     this.gimmick = config.gimmick || '';
     this.puzzleName = config.puzzleName || 'Puzzle';
+    this.level = config.level || null;
     this.storageKey = config.storageKey || null;
     this.victoryText = config.victoryText || 'Chopin - Nocturne in E Flat Major';
+    this.precomputedPositions = config.precomputedPositions || null;
 
     // Physics config
     this.physicsConfig = {
@@ -35,7 +37,7 @@ class NetworkViz {
       lengthScale: config.lengthScale || (80 * this.scaleFactor),
       damping: config.damping || 0.03,
       maxVelocity: config.maxVelocity || 100,
-      physicsStepsPerFrame: config.physicsStepsPerFrame || (this.mode === 'display' ? 20 : 50),
+      physicsStepsPerFrame: config.physicsStepsPerFrame || (this.mode === 'display' ? 20 : 100),
       targetFPS: config.targetFPS || 50,
       ...config.physicsConfig
     };
@@ -76,6 +78,24 @@ class NetworkViz {
     // Initialize
     this.seededRandom = createSeededRandom(this.randomSeed);
     this.normalRandom = createNormalRandom(this.seededRandom);
+
+    // Set theme color for this puzzle
+    // ROYGBIV hues (normalized to [0, 1]) matching the level select menu
+    const roygbivHues = [0.000, 0.082, 0.167, 0.333, 0.585, 0.748, 0.833];
+
+    if (this.level !== null && this.level >= 1 && this.level <= 7) {
+      // Use ROYGBIV color scheme for levels 1-7
+      this.themeHue = roygbivHues[this.level - 1];
+      this.themeSat = 0.2;  // Pastel saturation (matching ROYGBIV)
+      this.themeVal = 1.0;  // Full brightness
+    } else {
+      // Fallback to hash-based color for non-level puzzles
+      const themeHash = hashString(this.puzzleName);
+      this.themeHue = ((themeHash % 360) / 360);  // [0, 1]
+      this.themeSat = 0.3;
+      this.themeVal = 1.0;
+    }
+
     this.initializeNodes();
     this.setupEventListeners();
 
@@ -175,7 +195,7 @@ class NetworkViz {
     // Apply velocity perturbation
     if (foundNode) {
       const pos = this.nodePositions[foundNode];
-      const perturbationStddev = alreadyRevealed ? 0.25 : 0.75;
+      const perturbationStddev = alreadyRevealed ? 1.0 : 3.0;
       const a = perturbationStddev * this.scaleFactor * Math.sqrt(3);
       pos.vx += (this.seededRandom() * 2 * a) - a;
       pos.vy += (this.seededRandom() * 2 * a) - a;
@@ -274,21 +294,58 @@ class NetworkViz {
     const lengthScale = this.physicsConfig.lengthScale;
     this.maxInitialZ = 0;
 
-    this.nodes.forEach(node => {
-      const z = (this.seededRandom() - 0.5) * 2 * lengthScale;
-      this.nodePositions[node] = {
-        x: margin + this.seededRandom() * (this.virtualWidth - 2 * margin),
-        y: margin + this.seededRandom() * (this.virtualHeight - 2 * margin),
-        z: z,
-        vx: 0,
-        vy: 0,
-        vz: 0,
-        fx: 0,
-        fy: 0,
-        fz: 0
-      };
-      this.maxInitialZ = Math.max(this.maxInitialZ, Math.abs(z));
-    });
+    // Check if we have precomputed positions
+    if (this.precomputedPositions) {
+      console.log('📍 Using precomputed positions, skipping annealing phases');
+
+      // Validate all nodes are present
+      const missingNodes = this.nodes.filter(node => !this.precomputedPositions[node]);
+      if (missingNodes.length > 0) {
+        console.error('❌ Missing precomputed positions for nodes:', missingNodes);
+        console.error('   Puzzle may have changed since last precompute. Run: node scripts/precompute_layouts.js');
+        throw new Error(`Missing precomputed positions for ${missingNodes.length} nodes`);
+      }
+
+      // Use precomputed positions, start at Phase 4 (steady state)
+      this.nodes.forEach(node => {
+        this.nodePositions[node] = {
+          x: this.precomputedPositions[node].x,
+          y: this.precomputedPositions[node].y,
+          z: 0,  // Already in 2D after Phase 3
+          vx: 0,
+          vy: 0,
+          vz: 0,
+          fx: 0,
+          fy: 0,
+          fz: 0
+        };
+      });
+
+      // Set physics step count to Phase 4 start to skip annealing
+      this.physicsStepCount = 10000;
+    } else {
+      // No precomputed positions, use random initialization (will anneal)
+      if (this.mode === 'game') {
+        console.log('⚠️  No precomputed positions found, running full annealing (slow!)');
+        console.log('   Run: node scripts/precompute_layouts.js');
+      }
+
+      this.nodes.forEach(node => {
+        const z = (this.seededRandom() - 0.5) * 2 * lengthScale;
+        this.nodePositions[node] = {
+          x: margin + this.seededRandom() * (this.virtualWidth - 2 * margin),
+          y: margin + this.seededRandom() * (this.virtualHeight - 2 * margin),
+          z: z,
+          vx: 0,
+          vy: 0,
+          vz: 0,
+          fx: 0,
+          fy: 0,
+          fz: 0
+        };
+        this.maxInitialZ = Math.max(this.maxInitialZ, Math.abs(z));
+      });
+    }
   }
 
   // ========== Coordinate Transformation ==========
@@ -346,9 +403,25 @@ class NetworkViz {
       return neighbor === null || this.guessedWords.has(neighbor);
     });
     if (isGuessed && (!isGiven || allNeighborsSolved)) {
+      // Use puzzle's theme color with per-word variation
       const hash = hashString(node);
-      const hue = (hash % 360) / 360;
-      const rgb = hsvToRgb(hue, 0.3, 1.0);
+
+      // Generate variation using hash as seed
+      const rand1 = ((hash * 2654435761) % 1000) / 1000;  // Pseudo-random [0, 1]
+      const rand2 = ((hash * 1103515245 + 12345) % 1000) / 1000;
+      const rand3 = ((hash * 134775813) % 1000) / 1000;
+
+      // Apply variation: U[-0.1, 0.1]
+      const hVar = (rand1 - 0.5) * 0.2;  // Maps [0,1] to [-0.1, 0.1]
+      const sVar = (rand2 - 0.5) * 0.2;
+      const vVar = (rand3 - 0.5) * 0.2;
+
+      // Apply to theme color with clamping
+      const h = Math.max(0, Math.min(1, this.themeHue + hVar));
+      const s = Math.max(0, Math.min(1, this.themeSat + sVar));
+      const v = Math.max(0, Math.min(1, this.themeVal + vVar));
+
+      const rgb = hsvToRgb(h, s, v);
       return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
     }
     return '#ffffff';
@@ -464,8 +537,13 @@ class NetworkViz {
 
     // Run physics
     if (this.displayConfig.enablePhysics) {
-      const steps = this.physicsConfig.physicsStepsPerFrame;
-      for (let i = 0; i < steps; i++) {
+      // In Phase 4 (steady state), use fewer steps per frame like the old version
+      // This prevents numerical instability and high-frequency oscillations
+      const PHASE_3_STEPS = 10000;
+      const inPhase4 = this.physicsStepCount >= PHASE_3_STEPS;
+      const stepsPerFrame = inPhase4 ? 5 : this.physicsConfig.physicsStepsPerFrame;
+
+      for (let i = 0; i < stepsPerFrame; i++) {
         this.physicsStepCount++;
         this.updatePhysics();
       }

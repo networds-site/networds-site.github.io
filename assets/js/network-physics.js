@@ -31,7 +31,7 @@ function updateDisplayPhysics(context) {
   } = physicsConfig;
 
   const maxRepulsionDistance = 3 * lengthScale;
-  const dt = 10 / 3;  // Slowed down by factor of 3
+  const dt = 1;
 
   // Reset forces
   nodes.forEach(node => {
@@ -217,7 +217,6 @@ function updateGamePhysics(context) {
   } = physicsConfig;
 
   const maxRepulsionDistance = 3 * lengthScale;
-  const dt = 10 / 3;  // Slowed down by factor of 3
   const perturbationStddev = 0.5;
 
   // Phase constants
@@ -229,6 +228,9 @@ function updateGamePhysics(context) {
   const inPhase2 = physicsStepCount >= PHASE_1_STEPS && physicsStepCount < PHASE_2_STEPS;
   const inPhase3 = physicsStepCount >= PHASE_2_STEPS && physicsStepCount < PHASE_3_STEPS;
   const inPhase4 = physicsStepCount >= PHASE_3_STEPS;
+
+  // Use slower dt in Phase 4 (steady state), fast dt for annealing phases
+  const dt = 10;
 
   // Reset forces
   nodes.forEach(node => {
