@@ -1,6 +1,6 @@
 # Site settings
-title: Networds
-description: "a game"
+title: String Theory
+description: "A game of connections"
 
 # Build settings
 markdown: kramdown

@@ -1,21 +1,7 @@
-end<-dead
-end~and
-end#den
+dummy->level
 
-lion->den
-den#pen
+given: dummy
 
-and->one
-any->one
-and#any
+random seed: 1
 
-dead#head
-dead->stop
-stop~spot
-
-
-given: [leaves] + any, one
-
-random seed: 17
-
-name: Level 11 (final)
+name: Level 11

@@ -2,10 +2,6 @@ black->light
 sky->light
 light->bulb
 
-tap->dance
-tap->out
-wire->tap
-
 gut->shot
 gut->bacteria
 gut->feeling
@@ -15,9 +11,12 @@ craft->fair
 hover->craft
 
 light->beer
-beer->tap
 beer->gut
 craft->beer
+beer->garden
+garden->salad
+rose->garden
+garden->hose
 
 given: [leaves]
 

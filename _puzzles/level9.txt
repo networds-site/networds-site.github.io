@@ -2,6 +2,6 @@ dummy->level
 
 given: dummy
 
-random seed: 6
+random seed: 9
 
-name: Level 6
+name: Level 9

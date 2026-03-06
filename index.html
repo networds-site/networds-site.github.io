@@ -2,19 +2,65 @@
 layout: default
 ---
 
-<header>
-  <h1>{{ site.title }}</h1>
-  {% if site.description %}
-  <p class="site-subtitle">{{ site.description }}</p>
-  {% endif %}
+<!-- Load network visualization modules in dependency order -->
+<script src="{{ '/assets/js/network-utils.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/network-physics.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/network-renderer.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/network-sound.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/network-interaction.js' | relative_url }}"></script>
+<script src="{{ '/assets/js/network-viz-core.js' | relative_url }}"></script>
+
+<header style="text-align: center; margin-top: 20px;">
+  <div style="display: flex; justify-content: center; align-items: center; margin-bottom: 10px;">
+    <canvas id="headerViz" width="1200" height="240" style="display: block;"></canvas>
+  </div>
 </header>
+
+<script>
+  // Initialize the header visualization
+  const headerCanvas = document.getElementById('headerViz');
+  const headerViz = new NetworkViz({
+    canvas: headerCanvas,
+    nodes: ['string', 'theory'],
+    edges: [{ from: 'string', to: 'theory', direction: 'forward' }],
+    mode: 'display',
+    randomSeed: 42,
+    givenWords: ['string', 'theory'],
+    bounds: { x: 25, y: 5, width: 450, height: 90 },  // Smaller bounds with margins
+    scaleFactor: 1.2,  // With 2x multiplier becomes 2.4
+    // Don't set fontSize - let it calculate from viewScale for proper proportions
+    showBounds: true,
+    displayConfig: {
+      enablePhysics: true,
+      enableDancing: false,
+      showLabelsAlways: true,
+      boxStyle: 'fitted',
+      useBoundaryRepulsion: true
+    },
+    physicsConfig: {
+      physicsStepsPerFrame: 10,
+      lengthScale: 60,
+      repulsionFactor: 0.05,
+      attractionFactor: 0.3
+    }
+  });
+
+  // Position nodes manually in virtual coordinates
+  // Virtual canvas is 500x100, center them in the bounds
+  headerViz.nodePositions['string'].x = 175;
+  headerViz.nodePositions['string'].y = 50;
+  headerViz.nodePositions['theory'].x = 325;
+  headerViz.nodePositions['theory'].y = 50;
+
+  headerViz.start();
+</script>
 
 <main>
   <ul style="list-style: none; padding: 0;">
     {% assign sorted_puzzles = site.puzzles | sort: 'level' %}
     {% for puzzle in sorted_puzzles %}
       <li style="margin-bottom: 0.5em;">
-        <a href="{{ puzzle.url }}">{{ puzzle.title }}</a>
+        <a href="{{ puzzle.url }}">{{ puzzle.level }}) {{ puzzle.title | downcase }}</a>
       </li>
     {% endfor %}
   </ul>

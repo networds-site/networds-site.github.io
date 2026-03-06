@@ -1,8 +1,10 @@
 # Claude Notes - Networds Site
 
-## Critical Rules
-- **NEVER push to GitHub unless explicitly told to do so**
-- User always initiates git pushes
+## ⚠️ CRITICAL RULES ⚠️
+- **NEVER EVER PUSH TO GITHUB UNLESS EXPLICITLY TOLD TO DO SO**
+- **DO NOT PUSH WITHOUT EXPLICIT PERMISSION**
+- **WAIT FOR USER TO SAY "push" OR "git push"**
+- User always initiates all git pushes
 
 ## Project Overview
 Word puzzle game site hosted on GitHub Pages. Minimal Jekyll site with network-based word connection puzzles.
