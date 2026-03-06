@@ -201,6 +201,7 @@ function render(context) {
     victoryText,
     getBoxDimensions,
     getNodeColor,
+    givenWords,
     gimmick,
     physicsConfig,
     lineRectIntersection,
@@ -251,7 +252,6 @@ function render(context) {
   });
 
   // Draw nodes
-  ctx.font = `${fontSize}px "Gill Sans", sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
 
@@ -268,6 +268,10 @@ function render(context) {
     ctx.strokeRect(pos.x - box.width/2, pos.y - box.height/2, box.width, box.height);
 
     if (guessedWords.has(node) || displayConfig.showLabelsAlways) {
+      const useHandFont = guessedWords.has(node) && !givenWords.has(node);
+      ctx.font = useHandFont
+        ? `${fontSize}px "Indie Flower", cursive`
+        : `${fontSize}px "Gill Sans", sans-serif`;
       ctx.fillStyle = '#000';
       ctx.fillText(node, pos.x, pos.y);
     }

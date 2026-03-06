@@ -339,7 +339,13 @@ class NetworkViz {
   }
 
   getNodeColor(node) {
-    if (this.guessedWords.has(node) && !this.givenWords.has(node)) {
+    const isGiven = this.givenWords.has(node);
+    const isGuessed = this.guessedWords.has(node);
+    const allNeighborsSolved = isGiven && this.edges.every(e => {
+      const neighbor = e.from === node ? e.to : e.to === node ? e.from : null;
+      return neighbor === null || this.guessedWords.has(neighbor);
+    });
+    if (isGuessed && (!isGiven || allNeighborsSolved)) {
       const hash = hashString(node);
       const hue = (hash % 360) / 360;
       const rgb = hsvToRgb(hue, 0.3, 1.0);
@@ -418,6 +424,7 @@ class NetworkViz {
       victoryText: this.victoryText,
       getBoxDimensions: (n) => this.getBoxDimensions(n),
       getNodeColor: (n) => this.getNodeColor(n),
+      givenWords: this.givenWords,
       gimmick: this.gimmick,
       physicsConfig: this.physicsConfig,
       lineRectIntersection: lineRectIntersection,
