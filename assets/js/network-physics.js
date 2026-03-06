@@ -381,10 +381,21 @@ function updateGamePhysics(context) {
       } else if (inPhase4) {
         // Phase 4: Steady state - only dance if puzzle is complete
         if (guessedWords.size === nodes.length) {
-          const danceStddev = perturbationStddev / 300;
+          const danceStddev = perturbationStddev / 15000;  // 2% strength random component
           const aDance = danceStddev * Math.sqrt(3);
-          pos.vx += (seededRandom() * 2 * aDance) - aDance;
-          pos.vy += (seededRandom() * 2 * aDance) - aDance;
+
+          // Correlated random walk: 0.99 correlation with previous
+          const correlation = 0.99;
+
+          // New perturbation = 99% of old + 2% strength random component
+          const newPerturbX = correlation * pos.dancePerturbX + ((seededRandom() * 2 * aDance) - aDance);
+          const newPerturbY = correlation * pos.dancePerturbY + ((seededRandom() * 2 * aDance) - aDance);
+
+          pos.dancePerturbX = newPerturbX;
+          pos.dancePerturbY = newPerturbY;
+
+          pos.vx += newPerturbX;
+          pos.vy += newPerturbY;
         }
       }
 

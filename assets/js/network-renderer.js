@@ -219,7 +219,7 @@ function render(context) {
 
     // Draw "annealing..." text if not in steady state
     if (!inPhase4) {
-      ctx.font = '20px "Gill Sans", sans-serif';
+      ctx.font = '30px "Gill Sans", sans-serif';
       ctx.fillStyle = '#888';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
@@ -230,8 +230,8 @@ function render(context) {
   // Draw bounding box if enabled (transform to screen coordinates)
   if (showBounds && bounds) {
     const topLeft = toScreenCoords({ x: bounds.x, y: bounds.y });
-    ctx.strokeStyle = '#ff0000';
-    ctx.lineWidth = 2 * viewScale;
+    ctx.strokeStyle = context.boundsColor || '#ff0000';
+    ctx.lineWidth = (context.boundsLineWidth || 2) * viewScale;
     ctx.strokeRect(topLeft.x, topLeft.y, bounds.width * viewScale, bounds.height * viewScale);
   }
 
@@ -298,7 +298,7 @@ function render(context) {
     // Draw drag instruction
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     if (!isMobile && inPhase4) {
-      ctx.font = '18px "Gill Sans", sans-serif';
+      ctx.font = '27px "Gill Sans", sans-serif';
       ctx.fillStyle = '#999';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'bottom';
@@ -307,7 +307,7 @@ function render(context) {
 
     // Draw song name when complete
     if (guessedWords.size === nodes.length) {
-      ctx.font = '18px "Gill Sans", sans-serif';
+      ctx.font = '27px "Gill Sans", sans-serif';
       ctx.fillStyle = '#999';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';

@@ -29,7 +29,7 @@ layout: default
     bounds: { x: 25, y: 5, width: 450, height: 90 },  // Smaller bounds with margins
     scaleFactor: 1.2,  // With 2x multiplier becomes 2.4
     // Don't set fontSize - let it calculate from viewScale for proper proportions
-    showBounds: true,
+    showBounds: false,  // Hide bounding box for header
     displayConfig: {
       enablePhysics: true,
       enableDancing: false,
@@ -62,7 +62,7 @@ layout: default
 
 <main style="text-align: center; margin: 0; padding: 0;">
   <div style="display: flex; justify-content: center; align-items: center; margin: 0; padding: 0;">
-    <canvas id="levelSelectViz" width="1200" height="320" style="display: block; margin: 0; padding: 0;"></canvas>
+    <canvas id="levelSelectViz" width="1200" height="640" style="display: block; margin: 0; padding: 0;"></canvas>
   </div>
 </main>
 
@@ -111,6 +111,7 @@ layout: default
   // Header: x=25 virtual × 2.4 scale = 60px, width=450 × 2.4 = 1080px
   // Level: x=40 virtual × 1.5 scale = 60px, width=720 × 1.5 = 1080px
   // PERFECT ALIGNMENT!
+  // Canvas doubled to 640px height, so bounds doubled to height=410
   const levelSelectViz = new NetworkViz({
     canvas: levelSelectCanvas,
     nodes: levelNodes,
@@ -118,21 +119,24 @@ layout: default
     mode: 'display',
     randomSeed: 123,
     givenWords: levelNodes,
-    bounds: { x: 40, y: 10, width: 720, height: 190 },
+    bounds: { x: 40, y: 10, width: 720, height: 410 },
     scaleFactor: 0.75,  // With 2x multiplier = 1.5 viewScale
-    showBounds: true,   // Show red bounding box
+    showBounds: true,   // Show bounding box
+    boundsColor: '#ccc',  // Thin grey line like node boxes
+    boundsLineWidth: 2,
     displayConfig: {
-      enablePhysics: false,  // Disable physics - nodes will stay where positioned
+      enablePhysics: true,  // Re-enable physics for subtle movement
       enableDancing: false,
       showLabelsAlways: true,
       boxStyle: 'fitted',  // Fit to word width
-      useBoundaryRepulsion: false  // Use center-to-center repulsion (not edge-aware)
+      useBoundaryRepulsion: true  // Use boundary-aware repulsion to keep in bounds
     },
     physicsConfig: {
       physicsStepsPerFrame: 10,
       lengthScale: 70,
-      repulsionFactor: 0.05,
-      attractionFactor: 0.4
+      repulsionFactor: 0.02,  // Reduced from 0.05 for gentler repulsion
+      attractionFactor: 0.5,  // Increased from 0.4 for stronger edge spring
+      dampingFactor: 0.85     // Add damping to reduce oscillation
     }
   });
 
@@ -188,16 +192,37 @@ layout: default
     }
   };
 
-  // Initialize nodes in vertical line (one at top, seven at bottom)
+  // Initialize nodes in vertical line using formula: y = totalDistance * levelIndex / (numLevels + 1)
   const centerX = 40 + 720 / 2;  // Center of bounds horizontally (matches header in pixels)
-  const topY = 10 + 20;  // Start near top of bounds
-  const bottomY = 10 + 190 - 20;  // End near bottom of bounds
-  const spacing = levelNodes.length > 1 ? (bottomY - topY) / (levelNodes.length - 1) : 0;  // Space evenly
+  const topY = 10;  // Top of bounds
+  const bottomY = 10 + 410;  // Bottom of bounds
+  const totalDistance = bottomY - topY;
 
   levelNodes.forEach((node, index) => {
-    levelSelectViz.nodePositions[node].x = centerX;
-    levelSelectViz.nodePositions[node].y = topY + index * spacing;
+    // Add small random x-jitter
+    const jitterAmount = 50;  // Small jitter in virtual coordinates
+    const xJitter = (levelSelectViz.seededRandom() * 2 - 1) * jitterAmount;
+
+    levelSelectViz.nodePositions[node].x = centerX + xJitter;
+    levelSelectViz.nodePositions[node].y = topY + totalDistance * (index + 1) / (levelNodes.length + 1);
   });
+
+  // Override render to add instruction text at bottom right
+  const originalRender = levelSelectViz.render.bind(levelSelectViz);
+  levelSelectViz.render = function() {
+    originalRender();
+
+    // Draw instruction text in bottom right of bounding box
+    const bounds = this.bounds;
+    if (bounds) {
+      const bottomRight = this.toScreenCoords({ x: bounds.x + bounds.width, y: bounds.y + bounds.height });
+      this.ctx.font = '27px "Gill Sans", sans-serif';
+      this.ctx.fillStyle = '#999';
+      this.ctx.textAlign = 'right';
+      this.ctx.textBaseline = 'bottom';
+      this.ctx.fillText('double-click to select a level', bottomRight.x - 10, bottomRight.y - 10);
+    }
+  };
 
   levelSelectViz.start();
 

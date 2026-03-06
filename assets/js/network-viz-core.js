@@ -20,6 +20,8 @@ class NetworkViz {
     this.savedWords = new Set(config.savedWords || []);
     this.bounds = config.bounds || null;
     this.showBounds = config.showBounds || false;
+    this.boundsColor = config.boundsColor || '#ff0000';
+    this.boundsLineWidth = config.boundsLineWidth || 2;
     this.scaleFactor = config.scaleFactor || 1.0;
     this.fontSize = config.fontSize || null;
     this.onGuess = config.onGuess || null;
@@ -195,7 +197,7 @@ class NetworkViz {
     // Apply velocity perturbation
     if (foundNode) {
       const pos = this.nodePositions[foundNode];
-      const perturbationStddev = alreadyRevealed ? 1.0 : 3.0;
+      const perturbationStddev = alreadyRevealed ? 0.25 : 0.75;
       const a = perturbationStddev * this.scaleFactor * Math.sqrt(3);
       pos.vx += (this.seededRandom() * 2 * a) - a;
       pos.vy += (this.seededRandom() * 2 * a) - a;
@@ -336,7 +338,9 @@ class NetworkViz {
           vz: 0,
           fx: 0,
           fy: 0,
-          fz: 0
+          fz: 0,
+          dancePerturbX: 0,
+          dancePerturbY: 0
         };
       });
 
@@ -360,7 +364,9 @@ class NetworkViz {
           vz: 0,
           fx: 0,
           fy: 0,
-          fz: 0
+          fz: 0,
+          dancePerturbX: 0,
+          dancePerturbY: 0
         };
         this.maxInitialZ = Math.max(this.maxInitialZ, Math.abs(z));
       });
@@ -506,6 +512,8 @@ class NetworkViz {
       physicsStepCount: this.physicsStepCount,
       showBounds: this.showBounds,
       bounds: this.bounds,
+      boundsColor: this.boundsColor,
+      boundsLineWidth: this.boundsLineWidth,
       edges: this.edges,
       nodes: this.nodes,
       nodePositions: this.nodePositions,
