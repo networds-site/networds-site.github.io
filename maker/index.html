@@ -1,0 +1,116 @@
+---
+layout: default
+permalink: /maker/
+---
+
+<link rel="stylesheet" href="styles.css">
+
+<div class="container">
+  <h1 style="margin-top: 2em;">Puzzle Maker</h1>
+
+  <p style="font-size: 16px; margin-bottom: 1.5em;">
+    Create network puzzles interactively. Add nodes, draw edges, customize styling, and export to text format.
+  </p>
+
+  <div class="maker-container">
+    <div class="canvas-wrapper">
+      <canvas id="makerCanvas" width="1200" height="800"></canvas>
+
+      <!-- Floating toolbar in top-left -->
+      <div class="floating-toolbar">
+        <div class="tool-button active" id="selectTool" title="Select/Move (1)">
+          <div class="tool-icon">➤</div>
+        </div>
+        <div class="tool-button" id="panTool" title="Pan Canvas (2)">
+          <div style="font-size: 40px; line-height: 1; margin-top: -3px;">☩</div>
+        </div>
+        <div class="tool-button" id="addNodeTool" title="Add Node (3)">
+          <div class="tool-icon">□</div>
+        </div>
+        <div class="tool-button" id="drawEdgeTool" title="Draw Edge (4)">
+          <div class="tool-icon">─</div>
+        </div>
+        <div class="tool-button" id="eraserTool" title="Eraser (5)">
+          <div class="tool-icon">✕</div>
+        </div>
+        <div class="tool-button" id="undoButton" title="Undo (Ctrl+Z)">
+          <div style="font-size: 30px;">⎌</div>
+        </div>
+        <div class="tool-button" id="redoButton" title="Redo (Ctrl+Shift+Z)">
+          <div style="font-size: 30px; transform: scaleX(-1);">⎌</div>
+        </div>
+      </div>
+
+      <!-- Edge type legend (top-right) -->
+      <div class="floating-legend" id="edgeLegend">
+        <div style="font-weight: bold; margin-bottom: 8px;">Edge Types</div>
+        <div id="edgeTypeList">
+          <!-- Edge types will be populated here -->
+        </div>
+        <button id="addEdgeTypeButton" style="margin-top: 8px; padding: 4px 8px; font-size: 12px;">+ Add Type</button>
+      </div>
+
+      <!-- Properties panel (right side) -->
+      <div class="properties-panel" id="propertiesPanel" style="display: none;">
+        <!-- Node editor -->
+        <div id="nodeEditor" style="display: none;">
+          <h3>Node Properties</h3>
+          <div style="margin-bottom: 12px;">
+            <label>Label:</label>
+            <input type="text" id="nodeLabel" style="width: 100%; padding: 4px; margin-top: 4px;">
+          </div>
+          <button id="deleteNodeButton" style="background: #e63946; color: white; padding: 6px 12px;">Delete Node</button>
+        </div>
+
+        <!-- Edge editor -->
+        <div id="edgeEditor" style="display: none;">
+          <h3>Edge Properties</h3>
+          <div style="margin-bottom: 8px;">
+            <strong>From:</strong> <span id="edgeFrom"></span><br>
+            <strong>To:</strong> <span id="edgeTo"></span>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label>Direction:</label>
+            <select id="edgeDirection" style="width: 100%; padding: 4px; margin-top: 4px;">
+              <option value="forward">Forward (→)</option>
+              <option value="backward">Backward (←)</option>
+              <option value="bidirectional">Bidirectional (↔)</option>
+              <option value="undirected">Undirected (─)</option>
+            </select>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <label>Type:</label>
+            <select id="edgeType" style="width: 100%; padding: 4px; margin-top: 4px;">
+              <!-- Edge types populated dynamically -->
+            </select>
+          </div>
+          <button id="deleteEdgeButton" style="background: #e63946; color: white; padding: 6px 12px;">Delete Edge</button>
+        </div>
+      </div>
+
+      <!-- Status bar (bottom) -->
+      <div class="status-bar">
+        <span id="statusText">Select tool active</span>
+        <span style="margin-left: 20px;">Zoom: <span id="zoomLevel">100%</span></span>
+        <span style="margin-left: 20px;">Nodes: <span id="nodeCount">0</span></span>
+        <span style="margin-left: 20px;">Edges: <span id="edgeCount">0</span></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import/Export controls -->
+  <div style="margin-top: 20px; display: flex; gap: 10px;">
+    <button id="exportButton" style="padding: 8px 16px;">Export to Text</button>
+    <button id="importButton" style="padding: 8px 16px;">Import from Text</button>
+    <button id="clearAllButton" style="padding: 8px 16px; background: #e63946; color: white;">Clear All</button>
+  </div>
+</div>
+
+<script src="{{ '/assets/js/network-utils.js' | relative_url }}"></script>
+<script src="state.js"></script>
+<script src="physics.js"></script>
+<script src="renderer.js"></script>
+<script src="input.js"></script>
+<script src="ui.js"></script>
+<script src="export.js"></script>
+<script src="maker.js"></script>
