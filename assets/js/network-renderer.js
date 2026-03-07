@@ -200,7 +200,7 @@ function render(context) {
     viewScale,
     victoryText,
     getBoxDimensions,
-    getNodeColor,
+    getNodeFill,
     givenWords,
     gimmick,
     physicsConfig,
@@ -261,7 +261,7 @@ function render(context) {
     const boxVirtual = getBoxDimensions(node);
     const box = { width: boxVirtual.width * viewScale, height: boxVirtual.height * viewScale };
 
-    ctx.fillStyle = getNodeColor(node);
+    ctx.fillStyle = getNodeFill(node);
     ctx.strokeStyle = '#000';
     ctx.lineWidth = 2 * viewScale;
     ctx.fillRect(pos.x - box.width/2, pos.y - box.height/2, box.width, box.height);
@@ -273,6 +273,12 @@ function render(context) {
         ? `${fontSize}px "Indie Flower", cursive`
         : `${fontSize}px "Gill Sans", sans-serif`;
       ctx.fillStyle = '#000';
+      if (useHandFont) {
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = Math.max(1, fontSize * 0.06);
+        ctx.lineJoin = 'round';
+        ctx.strokeText(node, pos.x, pos.y);
+      }
       ctx.fillText(node, pos.x, pos.y);
     }
   });

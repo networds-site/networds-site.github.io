@@ -77,6 +77,7 @@ class NetworkViz {
     this.seededRandom = createSeededRandom(this.randomSeed);
     this.normalRandom = createNormalRandom(this.seededRandom);
     this.initializeNodes();
+    this.initializePatterns();
     this.setupEventListeners();
 
     // Audio context (shared)
@@ -291,6 +292,57 @@ class NetworkViz {
     });
   }
 
+  // ========== Pattern Generation ==========
+
+  initializePatterns() {
+    this.nodePatterns = new Map();
+    const tileSize = Math.max(32, Math.round(48 * this.viewScale));
+    const cropSize = 300; // px region cropped from center of each 1K image
+
+    // CC0 textures from Polyhaven (https://polyhaven.com)
+    const textureUrls = [
+      'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/cobblestone_large_01/cobblestone_large_01_diff_1k.jpg', // stone
+      'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/aerial_beach_01/aerial_beach_01_diff_1k.jpg',             // ripples
+      'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/wood_planks_grey/wood_planks_grey_diff_1k.jpg',           // wood
+      'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/worn_cracked_plaster/worn_cracked_plaster_diff_1k.jpg',   // crumpled paper
+      'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/dirty_carpet/dirty_carpet_diff_1k.jpg',                   // carpet
+      'https://dl.polyhaven.org/file/ph-assets/Textures/jpg/1k/brown_leather/brown_leather_albedo_1k.jpg',               // leather
+    ];
+
+    textureUrls.forEach((url, i) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        this.nodes.forEach(node => {
+          const hash = hashString(node);
+          if (hash % 6 !== i) return;
+
+          const hue = (hash % 360) / 360;
+          const rgb = hsvToRgb(hue, 0.4, 1.0);
+          const tintColor = `rgb(${rgb.r},${rgb.g},${rgb.b})`;
+
+          const tileCanvas = document.createElement('canvas');
+          tileCanvas.width = tileSize;
+          tileCanvas.height = tileSize;
+          const tc = tileCanvas.getContext('2d');
+
+          // Base: node's unique hue tint
+          tc.fillStyle = tintColor;
+          tc.fillRect(0, 0, tileSize, tileSize);
+
+          // Overlay: center crop of real texture at 70% opacity
+          const cx = img.width / 2, cy = img.height / 2;
+          tc.globalAlpha = 0.7;
+          tc.drawImage(img, cx - cropSize / 2, cy - cropSize / 2, cropSize, cropSize, 0, 0, tileSize, tileSize);
+          tc.globalAlpha = 1.0;
+
+          this.nodePatterns.set(node, this.ctx.createPattern(tileCanvas, 'repeat'));
+        });
+      };
+      img.src = url;
+    });
+  }
+
   // ========== Coordinate Transformation ==========
 
   // Transform from virtual (physics) coordinates to screen (canvas) coordinates
@@ -352,6 +404,13 @@ class NetworkViz {
       return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
     }
     return '#ffffff';
+  }
+
+  getNodeFill(node) {
+    const color = this.getNodeColor(node);
+    if (color === '#ffffff') return '#ffffff';
+    if (this.givenWords.has(node)) return color;
+    return this.nodePatterns.get(node) ?? color;
   }
 
   // ========== Physics ==========
@@ -423,7 +482,7 @@ class NetworkViz {
       viewScale: this.viewScale,
       victoryText: this.victoryText,
       getBoxDimensions: (n) => this.getBoxDimensions(n),
-      getNodeColor: (n) => this.getNodeColor(n),
+      getNodeFill: (n) => this.getNodeFill(n),
       givenWords: this.givenWords,
       gimmick: this.gimmick,
       physicsConfig: this.physicsConfig,
